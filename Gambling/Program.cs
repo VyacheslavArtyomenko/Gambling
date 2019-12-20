@@ -8,23 +8,28 @@ using System.Collections;
 
 namespace Gambling
 {
+    delegate void TestDelegate(int number);
+
     class Program
     {
+    
         public static void Main()
         {
+            // Test
             Game game = new Game();
             game.AddPlayer("Vyacheslav");
             game.AddPlayer("Tolyan");
+            game.AddPlayer("Vasya");
 
             game.DealCardsToPlayers();
 
-            game.DealFlop();
-            game.DealTurn();
-            game.DealRiver();
+            game.PostBlinds();
 
-            game.ShowBoard();
+
+            Console.ReadKey();
+
         }
-    }  
+    }
 }
 
 

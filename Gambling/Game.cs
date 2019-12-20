@@ -12,16 +12,40 @@ namespace Gambling
         Deck deck = null;
         Card[] flopTurnRiver = new Card[5];
 
-        public Game()
+        public int BigBlind { get; set; }
+        public int SmallBlind { get; set; }
+        public int CurrentButtonPosition { get; set; }
+
+        public int CurrentBank { get; set; } = 0;
+
+        public void Initialize()
         {
             players = new List<Player>();
             deck = new Deck();
             deck.Shuffle();
+            SmallBlind = BigBlind / 2;
+        }
+
+        public Game()
+        {
+            BigBlind = 100;
+            Initialize();
+        }
+
+        public Game(int bigBlind)
+        {
+            BigBlind = bigBlind;
+            Initialize();
         }
 
         public void AddPlayer(string name)
         {
             players.Add(new Player(name));
+        }
+
+        public void AddPlayer(string name, int bankroll)
+        {
+            players.Add(new Player(name, bankroll));
         }
 
         public void RemoveTopCardFromTheDeck()
@@ -94,5 +118,41 @@ namespace Gambling
                     Console.Write("{0}, ", flopTurnRiver[i]);
             }
         }
+
+        public void ShowPlayersBalance()
+        {
+            Console.WriteLine("Balance: ");
+            foreach (Player player in players)
+            {
+                player.ShowBalance();
+            }
+        }
+
+        // TO DO
+        public void RandomlySelectButtonPosition()
+        {
+            Random rand = new Random();
+
+        }
+
+        // TO DO (for all with any position)
+        public void PostBlinds()
+        {
+            players[CurrentButtonPosition + 1].TakeFromBankroll(SmallBlind);
+            players[CurrentButtonPosition + 2].TakeFromBankroll(BigBlind);
+            CurrentBank = SmallBlind + BigBlind;
+        }
+
+        public void PlayRound()
+        {
+            DealCardsToPlayers();
+
+
+            // randomly select position
+            // PostBlinds();
+            // DealFlop();
+        }
     }
 }
+
+// add history of each round to database
