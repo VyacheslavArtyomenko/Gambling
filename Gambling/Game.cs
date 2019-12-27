@@ -6,17 +6,33 @@ using System.Threading.Tasks;
 
 namespace Gambling
 {
+    // public delegate void EventDelegate(int amount);
+    enum Round { Preflop, Flop, Turn, River };
+
     class Game
     {
         List<Player> players = null;
         Deck deck = null;
         Card[] flopTurnRiver = new Card[5];
 
+        //public event EventDelegate MyEvent = null;
+
+        //public void InvokeEvent(int amount)
+        //{
+        //    if (MyEvent != null)
+        //        MyEvent(amount);
+        //}
+
         public int BigBlind { get; set; }
         public int SmallBlind { get; set; }
-        public int CurrentButtonPosition { get; set; }
+        public int CurrentButtonPosition { get; set; } = 0;
 
         public int CurrentBank { get; set; } = 0;
+
+        public int CurrentAmountToCall
+        { get; set; } = 0;
+
+        public Round round { get; set; }
 
         public void Initialize()
         {
@@ -24,6 +40,7 @@ namespace Gambling
             deck = new Deck();
             deck.Shuffle();
             SmallBlind = BigBlind / 2;
+            CurrentAmountToCall = BigBlind;
         }
 
         public Game()
@@ -128,31 +145,101 @@ namespace Gambling
             }
         }
 
-        // TO DO
         public void RandomlySelectButtonPosition()
         {
             Random rand = new Random();
+            CurrentButtonPosition = rand.Next(0, players.Count);
+        }
+
+        //IMPROVE ALGORITHM
+        public void DefinePlayersPosition()
+        {
+            players[CurrentButtonPosition].Position = PlayersPosition.Button;
+
+            if (CurrentButtonPosition < players.Count - 2)
+            {
+                players[CurrentButtonPosition + 1].Position = PlayersPosition.SmallBlind;
+                players[CurrentButtonPosition + 2].Position = PlayersPosition.BigBlind;
+            }
+
+            if (CurrentButtonPosition == players.Count - 2)
+            {
+                players[CurrentButtonPosition - 1].Position = PlayersPosition.SmallBlind;
+                players[0].Position = PlayersPosition.BigBlind;
+            }
+
+            if (CurrentButtonPosition == players.Count - 1)
+            {
+                players[0].Position = PlayersPosition.SmallBlind;
+                players[1].Position = PlayersPosition.BigBlind;
+            }
 
         }
 
-        // TO DO (for all with any position)
         public void PostBlinds()
         {
-            players[CurrentButtonPosition + 1].TakeFromBankroll(SmallBlind);
-            players[CurrentButtonPosition + 2].TakeFromBankroll(BigBlind);
-            CurrentBank = SmallBlind + BigBlind;
+            for (int i = 0; i < players.Count; i++)
+            {
+                switch (players[i].Position)
+                {
+                    case PlayersPosition.SmallBlind:
+                        players[i].TakeFromBankroll(SmallBlind);
+                        CurrentBank += SmallBlind;
+                        break;
+                    case PlayersPosition.BigBlind:
+                        players[i].TakeFromBankroll(BigBlind);
+                        CurrentBank += BigBlind;
+                        break;
+                }
+            }
         }
 
+        // TO DO
         public void PlayRound()
         {
             DealCardsToPlayers();
+            RandomlySelectButtonPosition();
+            DefinePlayersPosition();
+            PostBlinds();
+            ShowPlayersBalance();
 
-
-            // randomly select position
-            // PostBlinds();
             // DealFlop();
+        }
+
+        public void DetermineWinnerByShowDown()
+        {
+
+        }
+
+        public void MakeDecision()
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if(round < Round.River)
+                {
+                    if (players[i].IsInGame)
+                    {
+                        players[i].MakeDecision();
+                        switch (players[i].Decision)
+                        {
+                            case PlayersDecision.Fold:                              
+                                break;
+                            case PlayersDecision.Check:                               
+                                break;
+                            case PlayersDecision.Call:
+                                break;
+                            case PlayersDecision.Bet:
+                                break;
+                            case PlayersDecision.Raise:
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    DetermineWinnerByShowDown();
+                }
+            }
         }
     }
 }
-
-// add history of each round to database
